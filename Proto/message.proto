@@ -10,4 +10,5 @@ message Message {
 
 service MessageService {
     rpc Intercambio (Message) returns (Message);
+    rpc Intercambio2 (Message) returns (Message);
 }
