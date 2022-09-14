@@ -10,7 +10,7 @@ import (
 	//"net"
 	"time"
 
-	pb "github.com/Kendovvul/Ejemplo/Proto"
+	pb "github.com/Jaime9918/prueba/Proto"
 	amqp "github.com/rabbitmq/amqp091-go"
 	"google.golang.org/grpc"
 )
