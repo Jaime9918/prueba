@@ -20,10 +20,10 @@ func numeroAleatorio(valorMin int, valorMax int) int {
 }
 
 func main() {
-	LabName := "Laboratorio Pripiat" //nombre del laboratorio
-	qName := "Emergencias"           //nombre de la cola
-	hostQ := "localhost"             //ip del servidor de RabbitMQ 172.17.0.1
-	queue_escuadron := "escuadron lab1"
+	LabName := "Laboratorio Renca - Chile" //nombre del laboratorio
+	qName := "Emergencias"                 //nombre de la cola
+	hostQ := "localhost"                   //ip del servidor de RabbitMQ 172.17.0.1
+	queue_escuadron := "escuadron lab2"
 	queue_retorno := "retorno"
 	//hostS := "localhost"
 	connQ, err := amqp.Dial("amqp://guest:guest@" + hostQ + ":5672") //Conexion con RabbitMQ
@@ -51,7 +51,7 @@ func main() {
 			fmt.Println("Analizando estado " + LabName + ": [ESTALLIDO]")
 			err = ch.Publish("", qName, false, false,
 				amqp.Publishing{
-					Headers:     nil, //envia pedido de ayuda de ayuda
+					Headers:     nil,
 					ContentType: "text/plain",
 					Body:        []byte(LabName), //Contenido del mensaje
 				})
@@ -62,7 +62,7 @@ func main() {
 			time.Sleep(3 * time.Second) //espera de 1 segundo
 			escuadron := "-1"
 			for delivery := range chDelivery_escuadron {
-				escuadron = string(delivery.Body) // recibe al escuadron
+				escuadron = string(delivery.Body)
 				fmt.Println("Llega escuadron " + escuadron + " conteniendo estallido...")
 				break
 			}
@@ -72,7 +72,7 @@ func main() {
 					fmt.Println("Revisando estado de la resolucion: [LISTO]")
 					err = ch.Publish("", queue_retorno, false, false,
 						amqp.Publishing{
-							Headers:     nil, //avisa si termina el atentado
+							Headers:     nil,
 							ContentType: "text/plain",
 							Body:        []byte(string(escuadron)), //Contenido del mensaje
 						})

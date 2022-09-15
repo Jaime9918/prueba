@@ -5,12 +5,14 @@ import (
 	"fmt"
 	"log"
 	"math/rand"
-	"net"
+	"strconv"
+
+	//"net"
 	"time"
 
-	pb "github.com/Kendovvul/Ejemplo/Proto"
+	pb "github.com/Jaime9918/prueba/Proto"
 	amqp "github.com/rabbitmq/amqp091-go"
-	"google.golang.org/grpc"
+	//"google.golang.org/grpc"
 )
 
 type server struct {
@@ -29,56 +31,107 @@ func (s *server) Intercambio(ctx context.Context, msg *pb.Message) (*pb.Message,
 }
 
 func main() {
-	qName := "Emergencias"                                           //Nombre de la cola
-	hostQ := "localhost"                                             //Host de RabbitMQ 172.17.0.1
+	qName := "Emergencias" //Nombre de la cola
+	hostQ := "localhost"   //Host de RabbitMQ 172.17.0.1
+	queue_retorno := "retorno"
+	queue_escuadron1 := "escuadron lab1"
+	queue_escuadron2 := "escuadron lab2"
+	queue_escuadron3 := "escuadron lab3"
+	queue_escuadron4 := "escuadron lab4"
 	connQ, err := amqp.Dial("amqp://guest:guest@" + hostQ + ":5672") //Conexion con RabbitMQ
 	defer connQ.Close()
 	ch, err := connQ.Channel()
 	defer ch.Close()
-	q, err := ch.QueueDeclare(qName, false, false, false, false, nil) //Se crea la cola en RabbitMQ
-
+	q, err := ch.QueueDeclare(qName, false, false, false, false, nil)          //Se crea la cola en RabbitMQ
+	q1, err := ch.QueueDeclare(queue_retorno, false, false, false, false, nil) //Se crea la cola en RabbitMQ
 	var equipos_disp int = 2
 	fmt.Println(q)
+	fmt.Println(q1)
 	fmt.Println("Esperando Emergencias")
-	chDelivery, err := ch.Consume(qName, "", true, false, false, false, nil) //obtiene la cola de RabbitMQ
+	chDelivery, err := ch.Consume(qName, "", true, false, false, false, nil)                 //obtiene la cola de RabbitMQ
+	chDelivery_retorno, err := ch.Consume(queue_retorno, "", true, false, false, false, nil) //obtiene la cola de RabbitMQ
 	if err != nil {
 		log.Fatal(err)
 	}
-	listener, err := net.Listen("tcp", ":50051") //conexion sincrona
+	//listener, err := net.Listen("tcp", ":50051") //conexion sincrona
 	if err != nil {
 		panic("La conexion no se pudo crear" + err.Error())
 	}
-	serv := grpc.NewServer()
+	equipo_1 := 0 //equipo sin usar:0, equipo usado 1
+	//equipo_2:= 0 		//equipo sin usar:0, equipo usado 1
+	equipo := 0
+	//serv := grpc.NewServer()
 	for delivery := range chDelivery {
-		equipos_disp = equipos_disp - 1
-		fmt.Println("Pedido de ayuda de " + string(delivery.Body)) //obtiene el primer mensaje de la cola
+		fmt.Println("Mensaje asíncrono de " + string(delivery.Body)) //obtiene el primer mensaje de la cola
 		var validador int = 0
+		for equipos_disp <= 0 {
+			for delivery2 := range chDelivery_retorno {
+				fmt.Println("Retorno la escuadra " + string(delivery2.Body) + " a la central")
+				equipos_disp = equipos_disp + 1
+				if string(delivery2.Body) == "1" {
+					equipo_1 = 0
+				}
+				break
+			}
+		}
+		if equipo_1 == 0 {
+			equipo = 1
+		} else {
+			equipo = 2
+		}
 		if equipos_disp >= 0 {
+			equipos_disp = equipos_disp - 1
 			if validador == 0 {
 				validador = 1
-				fmt.Println("Envio ayuda a" + string(delivery.Body))
+				fmt.Println("Se envía Escuadron numero " + strconv.Itoa(equipo) + " a " + string(delivery.Body))
+				switch string(delivery.Body) {
+				case "Laboratorio Pripiat":
+					err = ch.Publish("", queue_escuadron1, false, false,
+						amqp.Publishing{
+							Headers:     nil,
+							ContentType: "text/plain",
+							Body:        []byte(strconv.Itoa(equipo)), //Contenido del mensaje
+						})
+				case "Laboratorio Renca - Chile":
+					err = ch.Publish("", queue_escuadron2, false, false,
+						amqp.Publishing{
+							Headers:     nil,
+							ContentType: "text/plain",
+							Body:        []byte(strconv.Itoa(equipo)), //Contenido del mensaje
+						})
+				case "Laboratorio Pohang - Korea":
+					err = ch.Publish("", queue_escuadron3, false, false,
+						amqp.Publishing{
+							Headers:     nil,
+							ContentType: "text/plain",
+							Body:        []byte(strconv.Itoa(equipo)), //Contenido del mensaje
+						})
+				case "Laboratorio Kampala - Uganda":
+					err = ch.Publish("", queue_escuadron4, false, false,
+						amqp.Publishing{
+							Headers:     nil,
+							ContentType: "text/plain",
+							Body:        []byte(strconv.Itoa(equipo)), //Contenido del mensaje
+						})
+				}
+				equipo_1 = 1
+				if err != nil {
+					log.Fatal(err)
+				}
 				//break //borrar
 			}
 			time.Sleep(5 * time.Second) //espera de 5 segundos
+			//fmt.Println("Esperando Emergencias")
 		}
-		if validador == 2 {
-			break
-		}
-		//for true {
-		//	go func() {
-
-		fmt.Println("como funciona esto?")
-		pb.RegisterMessageServiceServer(serv, &server{})
+		//	if validador == 2 {
+		//		break
+		//	}
+		//fmt.Println("como funciona esto?")
+		//pb.RegisterMessageServiceServer(serv, &server{})
 		//go func() {
-		if err = serv.Serve(listener); err != nil {
-			panic("El server no se pudo iniciar" + err.Error())
-		}
-		//	}()
+		//if err = serv.Serve(listener); err != nil {
+		//	panic("El server no se pudo iniciar" + err.Error())
 		//}
-		fmt.Println("Esperando Emergencias")
-		if validador == 1 {
-			break
-		}
+		//	}()
 	}
-	fmt.Println("se logra x2")
 }
