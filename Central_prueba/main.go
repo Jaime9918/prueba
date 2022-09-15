@@ -33,7 +33,7 @@ func (s *server) Intercambio(ctx context.Context, msg *pb.Message) (*pb.Message,
 
 func main() {
 	qName := "Emergencias" //Nombre de la cola
-	hostQ := "localhost"   //Host de RabbitMQ 172.17.0.1
+	hostQ := "dist016"     //Host de RabbitMQ 172.17.0.1
 	queue_retorno := "retorno"
 	queue_escuadron1 := "escuadron lab1"
 	queue_escuadron2 := "escuadron lab2"

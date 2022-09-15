@@ -24,7 +24,7 @@ func numeroAleatorio(valorMin int, valorMax int) int {
 func main() {
 	LabName := "Laboratorio Pripiat" //nombre del laboratorio
 	qName := "Emergencias"           //nombre de la cola
-	hostQ := "dist013"             //ip del servidor de RabbitMQ 172.17.0.1
+	hostQ := "localhost"             //ip del servidor de RabbitMQ 172.17.0.1
 	queue_escuadron := "escuadron lab1"
 	queue_retorno := "retorno"
 	hostS := "localhost"
