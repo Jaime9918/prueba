@@ -145,10 +145,8 @@ func main() {
 				if err != nil {
 					log.Fatal(err)
 				}
-				//break //borrar
 			}
 			time.Sleep(5 * time.Second) //espera de 5 segundos
-			//fmt.Println("Esperando Emergencias")
 		}
 		//	if validador == 2 {
 		//		break
