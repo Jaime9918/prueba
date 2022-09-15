@@ -6,11 +6,13 @@ import (
 	"fmt"
 	"log"
 	"math/rand"
+	"strconv"
 
 	//"net"
 	"time"
 
 	amqp "github.com/rabbitmq/amqp091-go"
+	"google.golang.org/grpc"
 	//"google.golang.org/grpc"
 )
 
@@ -25,7 +27,7 @@ func main() {
 	hostQ := "localhost"             //ip del servidor de RabbitMQ 172.17.0.1
 	queue_escuadron := "escuadron lab1"
 	queue_retorno := "retorno"
-	//hostS := "localhost"
+	hostS := "localhost"
 	connQ, err := amqp.Dial("amqp://guest:guest@" + hostQ + ":5672") //Conexion con RabbitMQ
 	defer connQ.Close()
 	ch, err := connQ.Channel()
@@ -38,6 +40,13 @@ func main() {
 	defer connQ.Close()
 	fmt.Println(q1)
 	defer ch.Close()
+	port := ":50051"
+	connS, err := grpc.Dial(hostS+port, grpc.WithInsecure()) //crea la conexion sincrona con el laboratorio
+
+	if err != nil {
+		panic("No se pudo conectar con el servidor" + err.Error())
+	}
+	defer connS.Close()
 	//port := ":50051"
 	//connS, err := grpc.Dial(hostS+port, grpc.WithInsecure()) //crea la conexion sincrona con el laboratorio
 
@@ -66,7 +75,9 @@ func main() {
 				fmt.Println("Llega escuadron " + escuadron + " conteniendo estallido...")
 				break
 			}
+			contador := 0
 			for true {
+				contador++
 				prob_termino := numeroAleatorio(1, 10)
 				if prob_termino <= 6 {
 					fmt.Println("Revisando estado de la resolucion: [LISTO]")
@@ -75,6 +86,18 @@ func main() {
 							Headers:     nil, //avisa si termina el atentado
 							ContentType: "text/plain",
 							Body:        []byte(string(escuadron)), //Contenido del mensaje
+						})
+					err = ch.Publish("", queue_retorno, false, false,
+						amqp.Publishing{
+							Headers:     nil,
+							ContentType: "text/plain",
+							Body:        []byte(string(LabName)), //Contenido del mensaje
+						})
+					err = ch.Publish("", queue_retorno, false, false,
+						amqp.Publishing{
+							Headers:     nil,
+							ContentType: "text/plain",
+							Body:        []byte(strconv.Itoa(contador)), //Contenido del mensaje
 						})
 					fmt.Println("Estallido contenido, Escuadrón " + escuadron + " retornando")
 					time.Sleep(2 * time.Second) //espera de 1 segundo
