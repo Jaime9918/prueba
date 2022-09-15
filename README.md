@@ -1,6 +1,6 @@
 # Ejemplo
 
-## Version local o una sola VM
+## Version local
 
 ### Compilar proto
     protoc --go_out=. --go_opt=paths=source_relative --go-grpc_out=. --go-grpc_opt=paths=source_relative Proto/message.proto
@@ -11,8 +11,22 @@ Ejecutar cada uno en una consola distinta.
 
 Para la central.
     
-    go run Central/main.go
+    make central
 
-Para el Laboratorio
+Para el Laboratorio1
 
-    go run Laboratorio/main.go
+    make laboratorio1
+
+Para el Laboratorio2
+
+    make laboratorio2
+
+Para el Laboratorio3
+
+    make laboratorio3
+
+Para el Laboratorio4
+
+    make laboratorio4
+
+
