@@ -33,7 +33,8 @@ func (s *server) Intercambio(ctx context.Context, msg *pb.Message) (*pb.Message,
 
 func main() {
 	qName := "Emergencias" //Nombre de la cola
-	hostQ := "dist016"     //Host de RabbitMQ 172.17.0.1
+	hostQ := "localhost"   //Host de RabbitMQ 172.17.0.1
+	hostS := "dist016"
 	queue_retorno := "retorno"
 	queue_escuadron1 := "escuadron lab1"
 	queue_escuadron2 := "escuadron lab2"
@@ -43,6 +44,12 @@ func main() {
 	defer connQ.Close()
 	ch, err := connQ.Channel()
 	defer ch.Close()
+	//--------------------------------------
+	connQ2, err := amqp.Dial("amqp://guest:guest@" + hostS + ":5672") //Conexion con RabbitMQ
+	defer connQ2.Close()
+	ch2, err := connQ2.Channel()
+	defer ch2.Close()
+	//------------------------------------------------
 	q, err := ch.QueueDeclare(qName, false, false, false, false, nil)          //Se crea la cola en RabbitMQ
 	q1, err := ch.QueueDeclare(queue_retorno, false, false, false, false, nil) //Se crea la cola en RabbitMQ
 	var equipos_disp int = 2
@@ -111,28 +118,28 @@ func main() {
 				fmt.Println("Se envía Escuadron numero " + strconv.Itoa(equipo) + " a " + string(delivery.Body))
 				switch string(delivery.Body) {
 				case "Laboratorio Pripiat":
-					err = ch.Publish("", queue_escuadron1, false, false,
+					err = ch2.Publish("", queue_escuadron1, false, false,
 						amqp.Publishing{
 							Headers:     nil,
 							ContentType: "text/plain",
 							Body:        []byte(strconv.Itoa(equipo)), //Contenido del mensaje
 						})
 				case "Laboratorio Renca - Chile":
-					err = ch.Publish("", queue_escuadron2, false, false,
+					err = ch2.Publish("", queue_escuadron2, false, false,
 						amqp.Publishing{
 							Headers:     nil,
 							ContentType: "text/plain",
 							Body:        []byte(strconv.Itoa(equipo)), //Contenido del mensaje
 						})
 				case "Laboratorio Pohang - Korea":
-					err = ch.Publish("", queue_escuadron3, false, false,
+					err = ch2.Publish("", queue_escuadron3, false, false,
 						amqp.Publishing{
 							Headers:     nil,
 							ContentType: "text/plain",
 							Body:        []byte(strconv.Itoa(equipo)), //Contenido del mensaje
 						})
 				case "Laboratorio Kampala - Uganda":
-					err = ch.Publish("", queue_escuadron4, false, false,
+					err = ch2.Publish("", queue_escuadron4, false, false,
 						amqp.Publishing{
 							Headers:     nil,
 							ContentType: "text/plain",

@@ -24,7 +24,7 @@ func main() {
 	LabName := "Laboratorio Pohang - Korea" //nombre del laboratorio
 	qName := "Emergencias"                  //nombre de la cola
 	hostQ := "dist015"                      //ip del servidor de RabbitMQ 172.17.0.1
-	//hostS := "localhost"
+	hostS := "localhost"
 	queue_escuadron := "escuadron lab3"
 	queue_retorno := "retorno"
 	//hostS := "localhost"
@@ -32,8 +32,13 @@ func main() {
 	defer connQ.Close()
 	ch, err := connQ.Channel()
 	defer ch.Close()
-	q1, err := ch.QueueDeclare(queue_escuadron, false, false, false, false, nil)                 //Se crea la cola en RabbitMQ
-	chDelivery_escuadron, err := ch.Consume(queue_escuadron, "", true, false, false, false, nil) //obtiene la cola de RabbitMQ
+	connQ2, err := amqp.Dial("amqp://guest:guest@" + hostS + ":5672") //Conexion con RabbitMQ
+	defer connQ2.Close()
+	ch2, err := connQ2.Channel()
+	defer ch.Close()
+
+	q1, err := ch2.QueueDeclare(queue_escuadron, false, false, false, false, nil)                 //Se crea la cola en RabbitMQ
+	chDelivery_escuadron, err := ch2.Consume(queue_escuadron, "", true, false, false, false, nil) //obtiene la cola de RabbitMQ
 	if err != nil {
 		log.Fatal(err)
 	}
