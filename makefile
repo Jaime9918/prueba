@@ -1,16 +1,16 @@
 central: clean
 	go run Central/main.go
 
-lab1: 
+laboratorio1: 
 	go run Laboratorio1/main.go
 
-lab2: 
+laboratorio2: 
 	go run Laboratorio2/main.go
 
-lab3: 
+laboratorio3: 
 	go run Laboratorio3/main.go
 
-lab4: 
+laboratorio4: 
 	go run Laboratorio4/main.go
 
 clean:
